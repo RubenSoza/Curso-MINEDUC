@@ -1,0 +1,39 @@
+---
+title: "Actividad II"
+author: "Rubén Soza"
+output: 
+  prettydoc::html_pretty:
+    theme: leonids
+---
+
+## Parte I
+
+Considere los siguientes datos:
+
+```{r carrera, message= FALSE}
+library(tidyverse)
+carrera <- read_delim("http://midas.mat.uc.cl/courses/bc2019/Datasets/carrera.csv", delim = ";")
+head(carrera)
+```
+
+(1) Si se quiere modelar el tiempo obtenido en la carrera en función de alguna otra variable. ¿Qué variable sugeriría utilizar? Justifique su respuesta indicando las herramientas en las que basó su elección.
+
+(2) Plantee el modelo adecuado con sus supuestos y ajústelo. Evalúe la significancia de los coeficientes, y en base a ello, escriba la recta estimada.
+
+(3) Ajuste el modelo de regresión sin considerar intercepto. Grafique la recta estimada e interprete el coeficiente en el contexto del problema. 
+
+### Solución
+
+....
+
+## Parte II
+
+(1) Grafique los residuos de manera que le permita analizar si está bien especificada la función de la media. Añada las bandas de confianza correspondientes. Identifique qué observaciones son atípicas.
+
+(2) Verifique si se cumplen o no los supuestos de la regresión lineal sobre los residuos.
+
+(3) Obtenga los coeficientes $h_{ii}$, las Distancias de Cook y los DFFITS ¿Qué observaciones son más influyentes en el modelo?
+
+### Solución
+
+....

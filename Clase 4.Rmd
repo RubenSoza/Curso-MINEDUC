@@ -1,0 +1,305 @@
+---
+title: false
+author: false
+output:
+  revealjs::revealjs_presentation:
+    lib_dir: static
+    self_contained: false
+    reveal_plugins: ["zoom"]
+    transition: slide
+    css: styles.css
+    incremental: true
+    center: false
+    theme: simple
+    fig_width: 6
+    fig_height: 3.5
+    reveal_options:
+      slideNumber: false
+      controls: false
+      mouseWheel: false
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+library(highcharter)
+file.remove(dir("wdgts/", full.names = TRUE))
+
+knitr::opts_chunk$set(fig.path = "static/img/", echo = TRUE, cache = TRUE, message = FALSE)
+
+options(highcharter.theme =
+          hc_theme_smpl(chart = list(
+            backgroundColor = "transparent",
+            style = list(fontFamily = "Source Sans Pro"))
+            ))
+source("setup.R")
+```
+
+# <br><br>Computación Estadística con R<br><small>Clase 4 <br><br> Rubén Soza</small>{ .center .white data-background="#75AADB" }
+
+# Generación de Reportes Automatizables{ .center .white data-background="#75AADB" }
+
+## {data-background-video="video1.mp4"}
+
+## ¿Qué es R Markdown?
+
+- Marco unificado para ciencia de datos.
+- Combina:
+    - Código.
+    - Resultados.
+    - Gráficos.
+- Los documentos R Markdown son totalmente reproducibles y automatizables.
+
+## Diferentes formatos de salida
+
+   ![](https://rmarkdown.rstudio.com/images/RMarkdownOutputFormats.png)
+   
+## Primer vistazo
+
+![](Images/rmark1.png)
+
+## Detrás de escenas
+
+`Ventaja flujo de trabajo de dos pasos:` ¡Se puede crear una amplia gama de formatos de salida!
+![](http://r4ds.had.co.nz/images/RMarkdownFlow.png)
+
+- Word: Requiere Microsoft Word instalado.
+- PDF: Requiere un compilador de LaTeX instalado.
+- HTML.
+
+## Sintaxis
+- `*cursiva*` y `_cursiva_` -> *cursiva* y _cursiva_
+- `**negrita**` y `__negrita__` -> **negrita** y __negrita__
+- `[link](www.rstudio.com)` -> [link](www.rstudio.com)
+- `# Encabezado 1`
+- `## Encabezado 2`
+- `### Encabezado 3`
+- imagen: `![](camino/a/imagen.png)`
+- ` - lista`
+
+## Código
+
+<p align = "justify">
+Podemos ingresar código de R en nuestros documentos utilizando los `chunks`(ctrl + alt + I). Existen opciones que permiten manipular la acción de un chunk en específico en nuestro documento. Algunas opciones son: </p>
+
+Opción  | Efecto
+------  | -------------------
+include | ¿Muestra el fragmento de código de R y su resultado?
+echo    | ¿Muestra el fragmento de código de R?
+message | ¿Muestra los mensajes de salida?
+warning | ¿Muestra las advertencias?
+eval    | ¿Evalúa el fragmento de código?
+
+Para más información ver el siguiente [link](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf)
+
+## YAML
+
+<p align = "justify">
+Aquí se escriben opciones generales del documento. Se pueden configurar, entre muchas otras cosas: </p>
+
+- Fuente y formato.
+- Tamaños de figuras o gráficos.
+- Agregar un CSS.
+
+## Código entre texto
+
+Podemos realizar código r en cualquier oración. Para ello basta escribir
+
+![](Images/rinline.png)
+
+Para mayor información de todo esto, ver el siguiente [link](https://bookdown.org/yihui/rmarkdown/)
+
+## Veamos un ejemplo en R{ .center .white data-background="#75AADB" }
+
+## Reporte de Tablas
+<p align = "justify">
+Existen diferentes paquetes para generar tablas en tus reportes. Veamos 2 de ellos: `kableExtra` y `DT`. Primero cargamos la base de datos y los paquetes a utilizar: </p>
+
+```{r, message = FALSE}
+library(tidyverse)
+library(kableExtra)
+library(DT)
+data(iris)
+
+```
+
+## `kableExtra`
+
+<p align = "justify">
+La función `kable()` genera una tabla que puede ser editada utilizando funciones de la librería `kableExtra`. Veamos un ejemplo sencillo: </p>
+
+```{r, eval = FALSE}
+
+kable(iris, "html") %>% 
+  kable_styling("striped",position = "center", full_width = F) %>% 
+  column_spec(2, bold = T, color = "red") %>% 
+  add_header_above(c("Sepal" = 2, "Petal" = 2, " " = 1)) %>% 
+  pack_rows("Grupo 1", 1,4) %>% 
+  pack_rows("Grupo 2", 5,8) %>% 
+  scroll_box(width = "100%", height = "500px") %>% 
+  footnote("Tabla de Iris")
+```
+
+----
+```{r, echo = FALSE}
+kable(iris) %>% 
+  kable_styling("striped",position = "center", full_width = F) %>% 
+  column_spec(2, bold = T, color = "red") %>% 
+  add_header_above(c("Sepal" = 2, "Petal" = 2, " " = 1)) %>% 
+  pack_rows("Grupo 1", 1,4) %>% 
+  pack_rows("Grupo 2", 5,8) %>% 
+  scroll_box(width = "100%", height = "500px") %>% 
+  footnote("Tabla de Iris")
+```
+Para mayor información ver este [link](https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html)
+
+## `DT`
+
+La librería `DT` permite realizar tablas más customizables.
+
+```{r, eval = FALSE}
+library(DT)
+datatable(iris, filter = "top")
+```
+Para más información ver este [link](https://rstudio.github.io/DT/)
+
+## Actividad I: parte I
+
+<p align = "justify">
+Considere el archivo `Actividad I.Rmd`. Convertir los títulos de las secciones de estos párrafos en encabezados utilizando la sintaxis apropiada, usando diferentes niveles de encabezado para las secciones y subsecciones: </p>
+
+- Secciones (encabezados de primer nivel): Introducción, La base de datos, Computando el nivel de dificultad, Computando la incertidumbre, Una métrica final.
+- Subsecciones (encabezados de segundo nivel): Chequeando la base de datos, Graficando el perfil de dificultad, Detectando niveles difíciles, Mostrando incertidumbre
+- Genere un índice para su archivo
+
+## Actividad I: parte II
+
+- En la línea 10, convertir "Candy Crush Saga" en negrita
+- Convertir "King" (línea 10) en un link hacia: https://es.wikipedia.org/wiki/King_(empresa)
+- Enfatice el texto en la línea 141 convirtiéndola en itálica
+- Incluir la imagen del siguiente link en la Introducción: http://www.garotasgeeks.com/wp-content/uploads/2014/05/candy-crush1-610x240.png
+
+## Actividad I: parte III
+
+- Quitar los mensajes que genera el cargar la librería en la línea 18
+- Cargar los datos y mostrar las primeras filas de la base de datos (línea 36) sin que me muestre el código ni los mensajes
+- Sabiendo que el código para calcular el número de jugadores y el período que abarcan los datos es 
+```{r, eval = FALSE}
+range(data$dt)
+length(unique(data$player_id))
+```
+
+- Completar con un código incrustado la línea 44
+
+## Actividad I: parte IV
+
+- Agregar en el YAML `theme:paper`, `toc:true` y `toc_float:true`.
+- ¿Qué pasa si agrego la opción 'code_folding: show'?
+- La línea 40 muestra un preview de la base de datos utilizada. Modifique este chunk para mostrar una tabla con la función `kable()`.
+
+# Regresión Lineal en R{ .center .white data-background="#75AADB" }
+
+## Contenidos
+
+<p align = "justify">Se revisarán los siguientes tópicos:</p>
+
+- Regresión lineal simple y múltiple.
+- Selección de variables.
+- Validación del modelo y análisis de sensibilidad.
+
+## Base de Datos
+
+```{r}
+fichier <- "http://www.biostatisticien.eu/springeR/Weight_birth.csv"
+mydata <- read_delim(fichier, "\t", escape_double = FALSE, trim_ws = TRUE)
+head(mydata)
+```
+
+----
+
+<p align = "justify">Transformamos libras a kilogramos y graficamos.</p> 
+
+```{r, fig.height = 4}
+mydata <- mydata %>% mutate(LWT = LWT*0.4535923)
+plot1 <- ggplot(mydata,aes(x = LWT, y = BWT)) + geom_point() + 
+  xlab("Peso de la Madre") + ylab("Peso del niño al nacer")
+plot1
+```
+
+## Regresión Lineal Simple
+
+<p align = "justify"> El modelo de regresión lineal simple busca explicar el comportamiento medio de cierta variable respuesta $y$ utilizando una variable explicativa $x$. </p>
+
+<p align = "justify"> Su formulación corresponde a </p>
+
+$$y_i = \beta_0 + \beta_1x_i + \epsilon_i,$$ 
+
+<p align = "justify"> donde $\epsilon_i \overset{i.i.d}{\sim} N(0,\sigma^2)$, $\sigma^2 \in \mathbb{R}_+, \beta_0,\beta_1 \in \mathbb{R}$. </p>
+
+----
+<p align = "justify"> La función `lm()` permite ajustar el modelo: </p>
+
+```{r, fig.height= 4}
+model1 <- lm(BWT ~ LWT, data = mydata)
+model1
+```
+
+<p align = "justify"> Los paquetes `ggiraph` y `ggiraphExtra` permiten visualizar de forma sencilla e interactiva regresiones lineales utilizando `ggPredict()`. </p>
+----
+```{r, fig.height= 4}
+library(ggiraph); library(ggiraphExtra)
+ggPredict(model1,interactive = TRUE)
+```
+
+----
+
+### Test sobre los Parámetros
+
+```{r}
+res <- summary(model1)
+res
+```
+
+----
+
+### Elementos del Resumen de un Modelo
+
+```{r}
+names(res)
+res$coefficients
+```
+
+----
+
+### Tabla ANOVA
+
+```{r}
+anova(model1)
+```
+
+----
+
+### I.C. para los Coeficientes de Regresión
+
+```{r}
+confint(model1)
+```
+
+----
+
+### Predicción:
+
+```{r}
+lwt0 <- c(56, 40)
+predict(model1, tibble(LWT = lwt0), interval = "prediction")
+predict(model1, tibble(LWT = lwt0), interval = "confidence") 
+```
+
+----
+
+### Banda de Confianza de la Recta Estimada
+
+```{r}
+ggPredict(model1,interactive = TRUE, se = TRUE)
+```

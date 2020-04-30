@@ -1,0 +1,104 @@
+---
+title: "Actividad I"
+author: "Rubén Soza"
+output: 
+  prettydoc::html_pretty:
+    theme: leonids
+---
+
+## Parte I
+
+Considere los siguientes datos:
+
+```{r carrera, message= FALSE}
+library(tidyverse)
+carrera <- read_delim("http://midas.mat.uc.cl/courses/bc2019/Datasets/carrera.csv", delim = ";")
+head(carrera)
+```
+
+(1) Si se quiere modelar el tiempo obtenido en la carrera en función de alguna otra variable. ¿Qué variable sugeriría utilizar? Justifique su respuesta indicando las herramientas en las que basó su elección.
+
+(2) Plantee el modelo adecuado con sus supuestos y ajústelo. Evalúe la significancia de los coeficientes, y en base a ello, escriba la recta estimada.
+
+(3) Ajuste el modelo de regresión sin considerar intercepto. Grafique la recta estimada e interprete el coeficiente en el contexto del problema. 
+
+### Solución
+
+Queremos modelar el tiempo utilizando alguna de las otras 2 variables. Para escoger entre una de las dos, miremos su correlación lineal:
+
+```{r log}
+carrera <- carrera %>% 
+  mutate(tiempo = log(tiempo))
+```
+
+
+```{r pairs, fig.height = 4, message = FALSE}
+library(GGally)
+ggpairs(carrera)
+```
+
+En virtud del gráfico de dispersión y del coeficiente de correlación mayor, escogemos la variable altura. El modelo será entonces $$\text{tiempo}_i = \beta_0 + \beta_1\text{altura}_i + \epsilon_i$$ donde $\epsilon_i \overset{iid}{\sim} \text{N}(0,\sigma^2)$. En `R` tenemos:
+
+```{r lm}
+modelo1 <- lm(tiempo ~ altura, data = carrera)
+summary(modelo1)
+```
+
+Notemos que el coeficiente del intercepto es no significativo, por lo cual deberíamos ajustar un modelo que no lo considerara. De todas maneras, la recta estimada será $$\hat{\text{tiempo}}_i = `r round(modelo1$coef[1],2)` + `r round(modelo1$coef[2],2)`\text{altura}_i.$$ El modelo sin intercepto será:  
+
+```{r lm2}
+modelo2 <- lm(tiempo ~ altura - 1,data = carrera)
+summary(modelo2)
+```
+
+El coeficiente asociado a la altura es significativo. De hecho, el modelo ajustado será
+$$\hat{\text{tiempo}}_i = `r round(modelo2$coef[1],5)`\text{altura}_i.$$ Gráficamente esto será:
+
+```{r graf lm, fig.height = 4}
+library(ggiraph); library(ggiraphExtra)
+ggPredict(modelo2,interactive = TRUE)
+```
+
+Esto quiere decir que un aumento en una unidad de la altura alcanzada en la carrera significará un aumento de `r round(modelo2$coef[1],2)` minutos en el tiempo de la carrera.
+
+## Parte II
+
+(1) Grafique los residuos de manera que le permita analizar si está bien especificada la función de la media. Añada las bandas de confianza correspondientes. Identifique qué observaciones son atípicas.
+
+(2) Verifique si se cumplen o no los supuestos de la regresión lineal sobre los residuos.
+
+(3) Obtenga los coeficientes $h_{ii}$, las Distancias de Cook y los DFFITS ¿Qué observaciones son más influyentes en el modelo?
+
+### Solución
+
+A continuación realizaremos el gráfico de residuos Studentizados versus los valores ajustados del modelo, junto con las respectivas bandas de confianza:
+
+```{r diag1}
+data <- tibble("fit" = modelo2$fitted.values, "res" = rstudent(modelo2), labels = seq(1,nrow(carrera)))
+ggplot(data, aes(x = fit, y = res, label = labels)) + geom_point() +
+  geom_hline(yintercept = qnorm(0.025)) + geom_hline(yintercept = qnorm(0.975)) +
+  geom_text(hjust = 1.5, size = 2.5, check_overlap = TRUE) + xlab("Valores ajustados") + 
+  ylab("Residuos Studentizados")
+
+```
+
+De aquí vemos que los valores atípicos o outliers es la observaciones 7. Además se observa un comportamiento de no nube de puntos. Esto nos dice que la función de media no esta bien especificada y que la varianza no cumple el supuesto de homocedasticidad. Para encontrar los $h_{ii}$ junto a las Distancias de Cook y DFFITS utilizamos el siguiente código:
+
+```{r}
+summary(influence.measures(modelo2))
+```
+De aquí, los puntos con mayor palanca son el 7,31,33 y 35. Además según Cooks los puntos influyentes son el 7 y el 33, mientras que según DFFIT estos corresponden a 7,11,31,33 y 35. Para analizar el supuesto de independencia basta utilizar el test de Durbin-Watson:
+
+```{r, message = FALSE}
+library(lmtest)
+dwtest(tiempo ~ altura - 1, data = carrera)
+```
+
+Notar que el valor-$p$ es menor que 0.05, lo que nos dice que no se rechaza la Hipótesis Nula. Por ende, existe evidencia para decir que los errores no son independientes. Finalmente, para el supuesto de normalidad observemos el siguiente qqplot: 
+
+```{r}
+ggplot(tibble("res" = modelo2$residuals), aes(sample = res)) + 
+  stat_qq() + stat_qq_line()
+```
+
+Dado que existen puntos que claramente se escapan de la línea, concluímos que el supuesto de normalidad de los errores no es satisfecho.

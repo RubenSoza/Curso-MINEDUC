@@ -1,0 +1,144 @@
+---
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse) # carga dplyr y ggplot2, entre otros paquetes
+library(stringr)   # Facilita la manipulación de strings
+library(haven)     # permite cargar BBDD de Stata
+```
+
+<br>
+```{r logo, echo=FALSE, out.width='50%'}
+knitr::include_graphics('ine-logo.png')
+```
+
+# Boletín estadístico: Empleo trimestral (extracto)
+
+## Grupo ocupacional
+
+```{r variacion-01, echo=FALSE}
+# Carga BBDD
+ene_jja <- list(
+  "2018" = haven::read_dta("Datasets/submuestra ENE 2018 07 JJA.dta"),
+  "2019" = haven::read_dta("Datasets/submuestra ENE 2019 07 JJA.dta")
+)
+
+# Estima el número de ocupados, para el trimestre junio-agosto 2018
+ocup_2018 <-
+  ene_jja[["2018"]] %>%
+  dplyr::filter(activ == 1) %>%
+  dplyr::summarise(n = sum(fact)) %>%
+  dplyr::pull(1)
+
+# Estima el número de ocupados, para el trimestre junio-agosto 2019
+ocup_2019 <-
+  ene_jja[["2019"]] %>%
+  dplyr::filter(activ == 1) %>%
+  dplyr::summarise(n = sum(fact)) %>%
+  dplyr::pull(1)
+
+# Estima la variación porcentual en 12 meses del número de ocupados
+ocup_vp <- round(100 * (ocup_2019 - ocup_2018) / ocup_2019, 1)
+```
+
+```{r grupo-ocupacion-1, echo=FALSE}
+# Carga BBDD
+ene_jja <- list(
+  "2018" = haven::read_dta("Datasets/submuestra ENE 2018 07 JJA.dta"),
+  "2019" = haven::read_dta("Datasets/submuestra ENE 2019 07 JJA.dta")
+)
+
+# Estima el número de ocupados, según grupo ocupacional (CIUO 08.cl)
+# para el trimestre junio-agosto 2018
+tbl1_2018 <-
+  ene_jja[["2018"]] %>%
+  dplyr::select(activ, b1, fact) %>%
+  dplyr::filter(activ == 1) %>%
+  dplyr::group_by(b1) %>%
+  dplyr::summarise(n = sum(fact))
+
+# Estima el número de ocupados, según grupo ocupacional (CIUO 08.cl)
+# para el trimestre junio-agosto 2019
+tbl1_2019 <-
+  ene_jja[["2019"]] %>%
+  dplyr::select(activ, b1, fact) %>%
+  dplyr::filter(activ == 1) %>%
+  dplyr::group_by(b1) %>%
+  dplyr::summarise(n = sum(fact))
+
+# Estima el cambio porcentual del número de ocupados,
+# según grupo ocupacional (CIUO 08.cl)
+# entre los trimestres junio-agosto 2018 y junio-agosto 2019
+tbl1 <-
+  dplyr::inner_join(tbl1_2018, tbl1_2019, by = "b1") %>%
+  dplyr::mutate(delta = 100 * (n.y - n.x) / n.x) %>%
+  dplyr::arrange(desc(delta)) %>%
+  haven::as_factor()
+
+# Estima la variación en 12 meses para algunos grupos específicos
+pcts <- tbl1$delta %>% round(1)
+names(pcts) <- tbl1$b1
+```
+
+La variación en doce meses de los ocupados (`r ocup_vp`%), se explicó por la expansión de los grupos técnicos y profesionales de nivel medio (`r pcts["Técnicos y profesionales de nivel medio"]`%) y trabajadores de los servicios y comercios (`r pcts["Trabajadores de los servicios y vendedores de comercios y mercados"]`%). En tanto, personal de apoyo administrativo (`r pcts["Personal de apoyo administrativo"]`%) y directivos y gerentes (`r pcts["Directores, gerentes y administradores"]`%) disminuyeron.
+
+```{r grupo-ocupacion-2, echo=FALSE}
+# Carga BBDD
+ene_jja <- list(
+  "2018" = haven::read_dta("Datasets/submuestra ENE 2018 07 JJA.dta"),
+  "2019" = haven::read_dta("Datasets/submuestra ENE 2019 07 JJA.dta")
+)
+
+# Estima la participación de ocupados (en %), 
+# según grupo ocupacional (CIUO 08.cl)
+# para el trimestre junio-agosto 2018
+tbl2_2018 <-
+  ene_jja[["2018"]] %>%
+  dplyr::select(activ, b1, fact) %>%
+  dplyr::filter(activ == 1) %>%
+  dplyr::group_by(b1) %>%
+  dplyr::summarise(n = sum(fact)) %>%
+  dplyr::mutate(
+    pct       = 100 * n / sum(n),
+    trimestre = "junio-agosto 2018"
+  )
+
+# Estima la participación de ocupados (en %),
+# según grupo ocupacional (CIUO 08.cl)
+# para el trimestre junio-agosto 2019
+tbl2_2019 <-
+  ene_jja[["2019"]] %>%
+  dplyr::select(activ, b1, fact) %>%
+  dplyr::filter(activ == 1) %>%
+  dplyr::group_by(b1) %>%
+  dplyr::summarise(n = sum(fact)) %>%
+  dplyr::mutate(
+    pct       = 100 * n / sum(n),
+    trimestre = "junio-agosto 2019"
+  )
+
+# Combina la información en una tabla en 3FN
+tbl2_3FN <-
+  rbind(tbl2_2018, tbl2_2019) %>%
+  dplyr::select(b1, pct, trimestre) %>%
+  dplyr::mutate(
+    trimestre = haven::as_factor(trimestre),
+    b1        = haven::as_factor(b1)
+  )
+
+# Crea el Gráfico 1
+tbl2_3FN %>%
+  ggplot2::ggplot(aes(stringr::str_wrap(b1, 25), pct, fill = trimestre)) +
+  ggplot2::geom_bar(position = "dodge", stat = "identity") +
+  ggplot2::coord_flip() +
+  ggplot2::scale_fill_manual(values = c("darkblue", "darkred")) +
+  ggplot2::labs(
+    x        = "Grupo ocupacional (CIUO 08.cl)",
+    y        = "Participación (%)",
+    title    = "Gráfico 1. Participación de ocupados",
+    subtitle = "según grupo ocupacional (CIUO 08.cl)",
+    caption  = "Elaboración propia en base a datos de la ENE 2018/2019."
+  )
+```
