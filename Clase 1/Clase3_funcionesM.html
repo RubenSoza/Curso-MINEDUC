@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Computación Estadística con R</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Alex Antequeda Campos" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Computación Estadística con R
+### Alex Antequeda Campos
+### Sesión 3.1
+
+---
+
+
+
+
+&lt;!-- Comienzo --&gt;
+---
+class: inverse, center, middle
+
+# Funciones 
+---
+
+## **Loops**
+Veamos el siguiente ejemplo
+
+
+```r
+library(readr)
+Spotify &lt;- read.csv("datasets/Spotify_data.csv")
+```
+Si quisieramos calcular la media de algunas variables.
+
+
+```r
+media1 = mean(Spotify$danceability)
+media2 = mean(Spotify$energy)
+(vector_medias = c(media1,media2))
+```
+
+```
+## [1] 0.5728394 0.6124827
+```
+Y que pasaria si son más de 50 variables??
+
+---
+
+## **for()**
+
+Trabaja de la forma: Para cada valor de la variable en el vector hacer
+
+```r
+for (variable in vector) {
+  (funcion a realizar)
+}
+```
+
+
+```r
+medias &lt;- setNames(numeric(ncol(Spotify)-2), colnames(Spotify[2:8]))
+for (i in 2:(ncol(Spotify)-2) ) {
+  medias[i] &lt;- mean(Spotify[,2])
+}
+medias
+```
+
+```
+##     danceability           energy      speechiness     acousticness 
+##        0.0000000        0.5728394        0.5728394        0.5728394 
+## instrumentalness          valence            tempo 
+##        0.5728394        0.5728394        0.5728394
+```
+
+.footnote[**Obs:** **setNames(vector,nombres)** añade nombres al vector]
+
+---
+
+
+##  Ejemplo 
+
+
+```r
+letras &lt;- letters[1:4] # Vector de letras
+for(j in letras) {
+    print(j)
+}
+```
+
+```
+## [1] "a"
+## [1] "b"
+## [1] "c"
+## [1] "d"
+```
+
+```r
+j # R mantiene el objeto j con el último valor tomado en el for
+```
+
+```
+## [1] "d"
+```
+
+---
+
+
+## Ejemplo
+
+
+```r
+for(j in seq_along(letras)) {
+    print(paste0("Letra ", j, ": ", letras[j]))
+}
+```
+
+```
+## [1] "Letra 1: a"
+## [1] "Letra 2: b"
+## [1] "Letra 3: c"
+## [1] "Letra 4: d"
+```
+
+```r
+j # R mantiene el objeto j con el último valor tomado en el for
+```
+
+```
+## [1] 4
+```
+
+
+.footnote[**Obs:** **seq_along(x)** crea un vector de enteros 1:length(x)]
+
+---
+
+## **while()**
+
+While() no itera sobre un vector predefinido, realiza el ciclo hasta que alguna condición ya no se cumpla. Para ingresar al loop hay que definir un valor un valor inicial que cumpla.
+
+
+```r
+i=0
+while (i &lt;= 4) {
+  i=i+1
+  print(i)
+}
+```
+
+```
+## [1] 1
+## [1] 2
+## [1] 3
+## [1] 4
+## [1] 5
+```
+
+---
+
+## **repeat{ }**
+
+Es un loop infinito, para poder terminar hay que agregar un **if()** junto con **break**.
+
+
+```r
+repeat {
+  # acciones a repetir en loop
+  if(condition) { break}
+}
+```
+
+
+```r
+# Ejemplo
+suma &lt;- 0
+repeat{
+ suma = suma + 1
+ print(suma)
+ if (suma == 3){
+ print("La suma termino")
+ break}
+}
+```
+
+```
+## [1] 1
+## [1] 2
+## [1] 3
+## [1] "La suma termino"
+```
+
+---
+
+## **if()**, else() y ifelse()
+
+Realiza la accion que esta en **{ }** solo si se cumple la condicion
+
+
+```r
+if (condition) {
+  accion
+}
+```
+
+```r
+# Ejemplo
+x&lt;-5
+if(x&lt;10){ print("es menor a 10") }
+if(x&gt;7) { print("es mayor a 4")   }
+if(x==5){  print("es exactamente 5") }
+```
+
+```
+## [1] "es menor a 10"
+```
+
+```
+## [1] "es exactamente 5"
+```
+
+---
+
+## if(), **else()** y ifelse()
+
+Se usa en conjunto a if().
+
+
+```r
+if (condition1) {        #cond1
+  accion1       
+}else if(condicion2){   #cond2  
+  accion2       
+}else{
+  accion3       # no cumple las condiciones anteriores
+}
+```
+
+
+
+```r
+# Ejemplo
+x &lt;- "12 Nov"
+if (x == "12 NoV") {      #cond1
+print("accion1")       
+}else if(x=="12 Nov"){   #cond2          
+  (z = 50)            
+}else{
+print("accion3")       
+}
+```
+
+```
+## [1] 50
+```
+
+---
+
+## if(), else() y **ifelse()**
+
+Combina a los anteriores en una sola función.
+
+
+```r
+ifelse(Condicion,accionSI,accionNO)
+```
+
+
+```r
+sexo &lt;- "Mujer"
+ifelse(sexo != "Hombre","Su nombre es Daniela","Su nombre es Juan")
+```
+
+```
+## [1] "Su nombre es Daniela"
+```
+
+---
+
+## Ejemplo carga de datos usando **for()**
+
+
+```r
+archivos  &lt;- list.files("/Users/aeantequeda/Google Drive/Doctorado/Diplomado DS/Curso Santander/Clase 3/datasets/")
+
+# Separemos las extensiones para guardar los nombres
+nombres.archivos &lt;-  stringr::str_remove(archivos, ".xlsx")[1:2]
+```
+
+
+```
+## [1] "Encuesta.xlsx"    "Playstore.xlsx"   "Spotify_data.csv" "Temperatura.xlsx"
+```
+
+```
+## [1] "Encuesta"  "Playstore"
+```
+
+
+```r
+library(readxl)
+BD &lt;- list()
+for (i in 1:2) {
+  BD[[nombres.archivos[i]]] &lt;- read_excel(paste("/Users/aeantequeda/Google Drive/Doctorado/Diplomado DS/Curso Santander/Clase 3/datasets/",sep="",paste(nombres.archivos[i],sep = "",".xlsx")))
+}
+```
+
+---
+
+## Ejemplo (cont.)
+
+&lt;img src="img/bdleida.png" width="900px" /&gt;
+
+---
+
+## **break**
+
+"Quiebra" o detiene un loop, tanto en while() o for(), es decir, sale de **un** ciclo.
+
+.pull-left[
+
+```r
+# Ejemplo for
+i=1
+while(i&lt;10) {                   
+  if(i == 6) {break}
+  print(paste("iteración", i))
+  i=i+1 }
+```
+
+```
+## [1] "iteración 1"
+## [1] "iteración 2"
+## [1] "iteración 3"
+## [1] "iteración 4"
+## [1] "iteración 5"
+```
+]
+
+.pull-right[
+
+```r
+# Ejemplo doble for
+for (j in 1:2) {
+  for(i in 1:10) {
+    z=i+j
+    if(z == 5) {break}
+    print(paste("iteración", z)) 
+    }
+}
+```
+
+```
+## [1] "iteración 2"
+## [1] "iteración 3"
+## [1] "iteración 4"
+## [1] "iteración 3"
+## [1] "iteración 4"
+```
+]
+
+---
+##  Mini Actividad
+
+Código que cuenta el número de caras obtenidas, el número de lanzamientos y se detiene al obtener **4** caras. ( **cara = rbinom(n = 1, size = 1, prob = 0.5)**  ayuda a simular una moneda).
+
+Revisar el siguiente código.
+
+
+```r
+caras &lt;- 0
+n_lanzamientos &lt;- 0
+while(caras &lt; 4) {
+  lanzamiento &lt;- rbinom(n = 1, size = 1, prob = 0.5)  # 1 :cara  0: sello
+      n_lanzamientos &lt;- n_lanzamientos + 1
+    print(paste("numero de lanzamiento",sep=" ",n_lanzamientos))
+  if (lanzamiento == 1) {
+    caras &lt;- caras + 1 }
+    print(paste("numero de caras",sep=" ",caras))
+    }
+```
+
+```
+## [1] "numero de lanzamiento 1"
+## [1] "numero de caras 0"
+## [1] "numero de lanzamiento 2"
+## [1] "numero de caras 0"
+## [1] "numero de lanzamiento 3"
+## [1] "numero de caras 0"
+## [1] "numero de lanzamiento 4"
+## [1] "numero de caras 0"
+## [1] "numero de lanzamiento 5"
+## [1] "numero de caras 0"
+## [1] "numero de lanzamiento 6"
+## [1] "numero de caras 1"
+## [1] "numero de lanzamiento 7"
+## [1] "numero de caras 2"
+## [1] "numero de lanzamiento 8"
+## [1] "numero de caras 2"
+## [1] "numero de lanzamiento 9"
+## [1] "numero de caras 2"
+## [1] "numero de lanzamiento 10"
+## [1] "numero de caras 3"
+## [1] "numero de lanzamiento 11"
+## [1] "numero de caras 3"
+## [1] "numero de lanzamiento 12"
+## [1] "numero de caras 3"
+## [1] "numero de lanzamiento 13"
+## [1] "numero de caras 4"
+```
+
+---
+## **next**
+
+Se salta la iteración que se define en una condición. Es similar a **break** solo que quiebra la iteración y no todo el ciclo.
+
+
+```r
+nombres = c("Carla","Rodrigo","Daniela","Andrés")
+for(i in nombres) {                     
+  if(i == "Daniela") {
+    next
+    }
+  print(paste("El nombre es", i))
+}
+```
+
+```
+## [1] "El nombre es Carla"
+## [1] "El nombre es Rodrigo"
+## [1] "El nombre es Andrés"
+```
+
+---
+class: inverse, center, middle
+
+# Familia Apply
+
+---
+
+## **apply()**: 
+
+### Matrices y data frames
+
+
+```r
+apply(x, MARGIN, FUN, ...) # MARGIN : 1 row, 2 col
+```
+
+
+```r
+# Ejemplo
+head(mtcars,3)
+apply(mtcars, 2, mean)
+apply(mtcars, 2, quantile, probs = c(0.05, 0.50, 0.95))
+```
+
+```
+##                mpg cyl disp  hp drat    wt  qsec vs am gear carb
+## Mazda RX4     21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+## Mazda RX4 Wag 21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+## Datsun 710    22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+```
+
+```
+##        mpg        cyl       disp         hp       drat         wt       qsec 
+##  20.090625   6.187500 230.721875 146.687500   3.596563   3.217250  17.848750 
+##         vs         am       gear       carb 
+##   0.437500   0.406250   3.687500   2.812500
+```
+
+```
+##        mpg cyl   disp     hp   drat      wt    qsec vs am gear carb
+## 5%  11.995   4  77.35  63.65 2.8535 1.73600 15.0455  0  0    3  1.0
+## 50% 19.200   6 196.30 123.00 3.6950 3.32500 17.7100  0  0    4  2.0
+## 95% 31.300   8 449.00 253.55 4.3145 5.29275 20.1045  1  1    5  4.9
+```
+
+---
+
+## **lapply()**: 
+
+### Listas y la salida son listas
+
+
+```r
+lapply(x, FUN, ...)
+```
+
+
+```r
+# Ejemplo
+datos &lt;- list(e1 = 2:5, 
+              e2 = runif(3,2,5), 
+              e3 = rnorm(3,1,1), 
+              e4 = rbinom(10,2,0.4))
+lapply(datos, sd)
+```
+
+```
+## $e1
+## [1] 1.290994
+## 
+## $e2
+## [1] 1.179709
+## 
+## $e3
+## [1] 1.438974
+## 
+## $e4
+## [1] 0.875595
+```
+
+---
+
+## **sapply()**: 
+### Listas y la salida se simplifica
+
+Intenta simplicar **lapply()**
+
+- si los resultados son listas de largo 1, se retorna un vector de resultados.
+
+- si los resultados son vectores del mismo largo (mayor a 1), retorna una matriz de resultados.
+
+- Si no se puede alguna de las anteriores, retorna una lista.
+
+
+```r
+sapply(datos, sd)
+```
+
+```
+##       e1       e2       e3       e4 
+## 1.290994 1.179709 1.438974 0.875595
+```
+
+---
+
+## **tapply()**: 
+### Vectores
+
+
+```r
+tapply(x, INDEX, FUN, ..., simplify = TRUE)
+```
+
+
+```r
+# Ejemplo
+head(mtcars,4)
+```
+
+```
+##                 mpg cyl disp  hp drat    wt  qsec vs am gear carb
+## Mazda RX4      21.0   6  160 110 3.90 2.620 16.46  0  1    4    4
+## Mazda RX4 Wag  21.0   6  160 110 3.90 2.875 17.02  0  1    4    4
+## Datsun 710     22.8   4  108  93 3.85 2.320 18.61  1  1    4    1
+## Hornet 4 Drive 21.4   6  258 110 3.08 3.215 19.44  1  0    3    1
+```
+
+```r
+tapply(mtcars$mpg, mtcars$cyl, mean)
+```
+
+```
+##        4        6        8 
+## 26.66364 19.74286 15.10000
+```
+
+---
+
+## Otros de la familia apply:
+
+- **mapply()**:  operaciones entre matrices y retorna una lista o vector
+
+- **vapply()**: retorna un vector con la longitud que tiene cada una de las listas introducidas.
+
+- **rapply()**: version recursiva de apply
+
+---
+
+## **function()**
+
+
+.pull-left[
+Se puede crear funciones expecificas para automatizar tareas.
+
+
+
+```r
+fsuma &lt;- function(x,y){  # x,y argumentos a utilizar en la función
+  z=x+y
+  plot(x,y)
+    return(z)            # deuelve el valor obtenido, si son más de 1, se utiliza una lista.
+}
+fsuma(2,3)
+```
+]
+
+.pull-right[
+&lt;img src="Clase3_funcionesM_files/figure-html/unnamed-chunk-36-1.png" width="700px" style="display: block; margin: auto;" /&gt;
+
+```
+## [1] 5
+```
+]
+
+
+&lt;!-- CAmbio de tema --&gt;
+---
+class: inverse, center, middle
+
+# Vamos a RStudio
+
+---
+
+## Actividad
+
+Descargar la base **Temperatura.xlsx**
+
+- Calcule el promedio de cada columna con valores numéricos usando **for()**
+
+- cree la variable **Humedad_2** categórica tal que sea: ALTA si Humedad&gt;0.7, Media si 0.4 &lt; Humedad &lt;=0.7 y BAJA en otro caso. Utilizar **for()**,**if()** y otros de ser necesario.
+
+- realicé lo mismo anterior pero con la variable Visibilidad considerando como corte el valor 8.5.
+
+- cree una columna de NA, y con un **for()** llenela con la diferencia entre Temperatura y Temperatura_Aparente.
+
+- Agrupe por Año y Mes los datos y calcule la Presión Promedio.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

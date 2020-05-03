@@ -1,0 +1,470 @@
+---
+title: "Computación Estadística con R"
+author: "Alex Antequeda Campos"
+date: 'Sesión 3.1'
+header-includes: \usepackage{graphicx}
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(dpi=300,fig.width=7)
+```
+
+```{r xaringan-themer, include = FALSE}
+library(xaringanthemer)
+
+write_xaringan_theme(text_bold_color = "black",
+                     code_font_size = "0.8em",
+                     text_font_google  = google_font("Fira Sans","300", "300i"),
+                     header_font_google = google_font("Fira Sans"), 
+                     code_font_google   = google_font("Droid Mono"),
+                     text_slide_number_color = "grey",
+                     code_highlight_color = "#D0ECE7",
+                     background_color = "#FFFFFF",
+                     header_color = "black",
+                     inverse_background_color = "#12419E",
+                     header_h1_font_size = "48px",
+                     header_h2_font_size = "35px",
+                     header_h3_font_size = "25px",
+                     padding = "1em 2em 1em 2em")
+```
+<!-- Comienzo -->
+---
+class: inverse, center, middle
+
+# Funciones 
+---
+
+## **Loops**
+Veamos el siguiente ejemplo
+
+```{r}
+library(readr)
+Spotify <- read.csv("datasets/Spotify_data.csv")
+```
+Si quisieramos calcular la media de algunas variables.
+
+```{r}
+media1 = mean(Spotify$danceability)
+media2 = mean(Spotify$energy)
+(vector_medias = c(media1,media2))
+```
+Y que pasaria si son más de 50 variables??
+
+---
+
+## **for()**
+
+Trabaja de la forma: Para cada valor de la variable en el vector hacer
+```{r eval=FALSE, include=TRUE}
+for (variable in vector) {
+  (funcion a realizar)
+}
+```
+
+```{r}
+medias <- setNames(numeric(ncol(Spotify)-2), colnames(Spotify[2:8]))
+for (i in 2:(ncol(Spotify)-2) ) {
+  medias[i] <- mean(Spotify[,2])
+}
+medias
+```
+
+.footnote[**Obs:** **setNames(vector,nombres)** añade nombres al vector]
+
+---
+
+
+##  Ejemplo 
+
+```{r}
+letras <- letters[1:4] # Vector de letras
+for(j in letras) {
+    print(j)
+}
+```
+```{r}
+j # R mantiene el objeto j con el último valor tomado en el for
+```
+
+---
+
+
+## Ejemplo
+
+```{r}
+for(j in seq_along(letras)) {
+    print(paste0("Letra ", j, ": ", letras[j]))
+}
+```
+```{r}
+j # R mantiene el objeto j con el último valor tomado en el for
+```
+
+
+.footnote[**Obs:** **seq_along(x)** crea un vector de enteros 1:length(x)]
+
+---
+
+## **while()**
+
+While() no itera sobre un vector predefinido, realiza el ciclo hasta que alguna condición ya no se cumpla. Para ingresar al loop hay que definir un valor un valor inicial que cumpla.
+
+```{r}
+i=0
+while (i <= 4) {
+  i=i+1
+  print(i)
+}
+
+```
+
+---
+
+## **repeat{ }**
+
+Es un loop infinito, para poder terminar hay que agregar un **if()** junto con **break**.
+
+```{r eval=FALSE, include=TRUE}
+repeat {
+  # acciones a repetir en loop
+  if(condition) { break}
+}
+```
+
+```{r}
+# Ejemplo
+suma <- 0
+repeat{
+ suma = suma + 1
+ print(suma)
+ if (suma == 3){
+ print("La suma termino")
+ break}
+}
+```
+
+---
+
+## **if()**, else() y ifelse()
+
+Realiza la accion que esta en **{ }** solo si se cumple la condicion
+
+```{r eval=FALSE, include=TRUE}
+if (condition) {
+  accion
+}
+```
+```{r eval=FALSE, include=TRUE}
+# Ejemplo
+x<-5
+if(x<10){ print("es menor a 10") }
+if(x>7) { print("es mayor a 4")   }
+if(x==5){  print("es exactamente 5") }
+```
+```{r echo=FALSE}
+x<-5
+if(x<10){
+  print("es menor a 10")
+}
+if(x>7){
+  print("es mayor a 4")
+}
+if(x==5){
+  print("es exactamente 5")
+}
+```
+
+---
+
+## if(), **else()** y ifelse()
+
+Se usa en conjunto a if().
+
+```{r eval=FALSE, include=TRUE}
+if (condition1) {        #cond1
+  accion1       
+}else if(condicion2){   #cond2  
+  accion2       
+}else{
+  accion3       # no cumple las condiciones anteriores
+}
+```
+
+
+```{r}
+# Ejemplo
+x <- "12 Nov"
+if (x == "12 NoV") {      #cond1
+print("accion1")       
+}else if(x=="12 Nov"){   #cond2          
+  (z = 50)            
+}else{
+print("accion3")       
+}
+```
+
+---
+
+## if(), else() y **ifelse()**
+
+Combina a los anteriores en una sola función.
+
+```{r eval=FALSE, include=TRUE}
+ifelse(Condicion,accionSI,accionNO)
+```
+
+```{r}
+sexo <- "Mujer"
+ifelse(sexo != "Hombre","Su nombre es Daniela","Su nombre es Juan")
+```
+
+---
+
+## Ejemplo carga de datos usando **for()**
+
+```{r include=TRUE,eval=TRUE}
+archivos  <- list.files("/Users/aeantequeda/Google Drive/Doctorado/Diplomado DS/Curso Santander/Clase 3/datasets/")
+
+# Separemos las extensiones para guardar los nombres
+nombres.archivos <-  stringr::str_remove(archivos, ".xlsx")[1:2]
+```
+
+```{r echo=FALSE}
+(archivos  <- list.files("/Users/aeantequeda/Google Drive/Doctorado/Diplomado DS/Curso Santander/Clase 3/datasets/"))
+(nombres.archivos <-  stringr::str_remove(archivos, ".xlsx")[1:2])
+
+```
+
+```{r}
+library(readxl)
+BD <- list()
+for (i in 1:2) {
+  BD[[nombres.archivos[i]]] <- read_excel(paste("/Users/aeantequeda/Google Drive/Doctorado/Diplomado DS/Curso Santander/Clase 3/datasets/",sep="",paste(nombres.archivos[i],sep = "",".xlsx")))
+}
+```
+
+---
+
+## Ejemplo (cont.)
+
+```{r echo=FALSE, out.width = "900px"}
+knitr::include_graphics("img/bdleida.png")
+```
+
+---
+
+## **break**
+
+"Quiebra" o detiene un loop, tanto en while() o for(), es decir, sale de **un** ciclo.
+
+.pull-left[
+```{r}
+# Ejemplo for
+i=1
+while(i<10) {                   
+  if(i == 6) {break}
+  print(paste("iteración", i))
+  i=i+1 }
+```
+]
+
+.pull-right[
+```{r}
+# Ejemplo doble for
+for (j in 1:2) {
+  for(i in 1:10) {
+    z=i+j
+    if(z == 5) {break}
+    print(paste("iteración", z)) 
+    }
+}
+```
+]
+
+---
+##  Mini Actividad
+
+Código que cuenta el número de caras obtenidas, el número de lanzamientos y se detiene al obtener **4** caras. ( **cara = rbinom(n = 1, size = 1, prob = 0.5)**  ayuda a simular una moneda).
+
+Revisar el siguiente código.
+
+```{r include=TRUE,eval=TRUE}
+caras <- 0
+n_lanzamientos <- 0
+while(caras < 4) {
+  lanzamiento <- rbinom(n = 1, size = 1, prob = 0.5)  # 1 :cara  0: sello
+      n_lanzamientos <- n_lanzamientos + 1
+    print(paste("numero de lanzamiento",sep=" ",n_lanzamientos))
+  if (lanzamiento == 1) {
+    caras <- caras + 1 }
+    print(paste("numero de caras",sep=" ",caras))
+    }
+```
+
+---
+## **next**
+
+Se salta la iteración que se define en una condición. Es similar a **break** solo que quiebra la iteración y no todo el ciclo.
+
+```{r}
+nombres = c("Carla","Rodrigo","Daniela","Andrés")
+for(i in nombres) {                     
+  if(i == "Daniela") {
+    next
+    }
+  print(paste("El nombre es", i))
+}
+```
+
+---
+class: inverse, center, middle
+
+# Familia Apply
+
+---
+
+## **apply()**: 
+
+### Matrices y data frames
+
+```{r eval=FALSE, include=TRUE}
+apply(x, MARGIN, FUN, ...) # MARGIN : 1 row, 2 col
+```
+
+```{r eval=FALSE, include=TRUE}
+# Ejemplo
+head(mtcars,3)
+apply(mtcars, 2, mean)
+apply(mtcars, 2, quantile, probs = c(0.05, 0.50, 0.95))
+```
+```{r echo=FALSE}
+head(mtcars,3)
+apply(mtcars, 2, mean)
+apply(mtcars, 2, quantile, probs = c(0.05, 0.50, 0.95))
+```
+
+---
+
+## **lapply()**: 
+
+### Listas y la salida son listas
+
+```{r eval=FALSE, include=TRUE}
+lapply(x, FUN, ...)
+```
+
+```{r}
+# Ejemplo
+datos <- list(e1 = 2:5, 
+              e2 = runif(3,2,5), 
+              e3 = rnorm(3,1,1), 
+              e4 = rbinom(10,2,0.4))
+lapply(datos, sd)
+```
+
+---
+
+## **sapply()**: 
+### Listas y la salida se simplifica
+
+Intenta simplicar **lapply()**
+
+- si los resultados son listas de largo 1, se retorna un vector de resultados.
+
+- si los resultados son vectores del mismo largo (mayor a 1), retorna una matriz de resultados.
+
+- Si no se puede alguna de las anteriores, retorna una lista.
+
+```{r}
+sapply(datos, sd)
+```
+
+---
+
+## **tapply()**: 
+### Vectores
+
+```{r eval=FALSE, include=TRUE}
+tapply(x, INDEX, FUN, ..., simplify = TRUE)
+```
+
+```{r}
+# Ejemplo
+head(mtcars,4)
+tapply(mtcars$mpg, mtcars$cyl, mean)
+```
+
+---
+
+## Otros de la familia apply:
+
+- **mapply()**:  operaciones entre matrices y retorna una lista o vector
+
+- **vapply()**: retorna un vector con la longitud que tiene cada una de las listas introducidas.
+
+- **rapply()**: version recursiva de apply
+
+---
+
+## **function()**
+
+
+.pull-left[
+Se puede crear funciones expecificas para automatizar tareas.
+
+
+```{r include=TRUE,eval=FALSE}
+fsuma <- function(x,y){  # x,y argumentos a utilizar en la función
+  z=x+y
+  plot(x,y)
+    return(z)            # deuelve el valor obtenido, si son más de 1, se utiliza una lista.
+}
+fsuma(2,3)
+```
+]
+
+.pull-right[
+```{r echo=FALSE, fig.align="center", out.width="700px"}
+# x,y argumentos a utilizar en la función
+fsuma <- function(x,y){  
+  z=x+y
+  plot(x,y)
+    return(z)  # deuelve el valor obtenido
+}              # si son más de 1, se utiliza una lista.
+fsuma(2,3)
+```
+]
+
+
+<!-- CAmbio de tema -->
+---
+class: inverse, center, middle
+
+# Vamos a RStudio
+
+---
+
+## Actividad
+
+Descargar la base **Temperatura.xlsx**
+
+- Calcule el promedio de cada columna con valores numéricos usando **for()**
+
+- cree la variable **Humedad_2** categórica tal que sea: ALTA si Humedad>0.7, Media si 0.4 < Humedad <=0.7 y BAJA en otro caso. Utilizar **for()**,**if()** y otros de ser necesario.
+
+- realicé lo mismo anterior pero con la variable Visibilidad considerando como corte el valor 8.5.
+
+- cree una columna de NA, y con un **for()** llenela con la diferencia entre Temperatura y Temperatura_Aparente.
+
+- Agrupe por Año y Mes los datos y calcule la Presión Promedio.
+
+
+
